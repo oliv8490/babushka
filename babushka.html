@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />¨
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <title>Bistro Babuskha</title>
+    <style>
+
+        header {
+            background-color: #850505;
+        }
+
+
+        h1 {
+            text-transform: uppercase;
+            margin: 0;
+            padding: 5vh;
+            text-align: center;
+            color:	#D4AF37;
+            font-size: 3em;
+        }
+
+        h2 {
+            text-transform: uppercase;
+            text-align: center;
+            color: white;
+            font-size: 2em;
+        }
+
+        H3 {
+            text-align: center;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        p {
+            color: white;
+        }
+
+        
+      body {
+
+        font-family: 'Oswald', sans-serif;
+        margin: 0;
+        background-color: #9b111e;
+      }
+
+      img {
+        width: 100%;
+      }
+
+      #liste {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+        grid-gap: 2em;
+        margin: 2em;;
+      }
+
+      .ret {
+          background-color:#850505;
+          padding: 1em;
+          padding-top: 0;
+          padding-bottom: 0;
+      }
+
+      nav {
+          display: flex;
+          justify-content:center;
+      }
+
+      nav button{
+    color: white;
+    text-decoration: none;
+}
+nav button:hover{
+    color: #D4AF37;
+    text-decoration: underline;
+    
+}
+
+      #menu  {
+          margin: 1vh;
+        display: flex;
+        justify-content: center;
+      }
+
+      .valgt {
+        background-color: #D4AF37;
+        color: black;
+      }
+
+      button {
+          margin: 1vh;
+          cursor: pointer;
+          background-color: #9b111e;
+          border-width: 0;
+          color: white;
+          text-align: center;
+          text-transform: uppercase;
+          font-family: 'Oswald', sans-serif;
+      }
+
+      article {
+          cursor: pointer;
+      }
+
+      #popup {
+            width: 100vw;
+            height: 100vh;;
+            position: fixed;
+            display: none;
+            overflow: scroll;
+        }
+
+        #popup article {
+            padding-top: 0;
+            width: 80vw;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #850505;
+            margin: 4rem auto;
+            padding-left: 1em;
+            padding-right: 1em;
+        }
+
+        #popup img {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            width: 40vw;
+        }
+
+        #popup article h3 {
+            font-size: 1.9em;
+            color: white;
+            display: block;
+        }
+
+
+        #popup article p {
+            color: white;
+            display: block;
+        }
+
+        #luk {
+        position: fixed;
+        padding: 1em;
+        font-size: 1.7em;
+        font-weight: bolder;
+        color: white;
+        cursor: pointer;
+      }
+
+
+      #popup p{
+          color: white;
+    }
+
+
+
+    </style>
+  </head>
+
+  <body>
+      <header>
+          <h1>Бистро Бабушка</h1>
+        </header>
+
+        <section id="popup">
+            <div id="luk">&#x2715</div>
+            <article>
+                <h3 class="navn"></h3>
+                <img src="" alt="">
+                <p class="langbeskrivelse"</p>
+                <p class="pris"></p>  
+            </article>
+        </section>
+
+        <h2>Menukort</h2>
+          <nav id"menu">
+              <button data-kategori="alle" class="valgt">Alle</button>
+              <button data-kategori="hovedretter">Hovedretter</button>
+              <button data-kategori="sideorders">Sides</button>
+              <button data-kategori="desserter">Desserter</button>
+              <button data-kategori="drikkevarer">Drikkevarer</button>
+            </nav>
+    
+        <section id="liste"></section>
+        
+        <template>
+            <article class="ret">
+                <h3 class="navn"></h3>
+                <img src="" alt=""/>
+                <p class="kortbeskrivelse"></p>
+                <p class="pris"></p>
+            </article>
+        </template>
+
+    <script>
+    //  constanter, der giver adgang til data
+      const header = document.querySelector("header h2");
+      const url = "https://babushka-dd8a.restdb.io/rest/menu";
+      const myHeaders = {
+        "x-apikey": "600ec2fb1346a1524ff12de4"
+      };
+    //   loader dommen
+      document.addEventListener("DOMContentLoaded", start);
+      let personer;
+      let filter = "alle";
+
+      // første funktion der kaldes efter DOM er loaded
+      function start() {
+        const filterKnapper = document.querySelectorAll("nav button");
+        filterKnapper.forEach((knap) => knap.addEventListener("click", filtrerRetter));
+
+        loadJSON();
+      }
+
+      function filtrerRetter() {
+        filter = this.dataset.kategori;
+        document.querySelector(".valgt").classList.remove("valgt");
+        this.classList.add("valgt");
+
+        visRetter();
+        // const header = document.querySelector("header h1");
+        header.textContent = this.textContent;
+      }
+
+      async function loadJSON() {
+        const JSONData = await fetch(
+          "https://babushka-dd8a.restdb.io/rest/menu", {
+            headers: myHeaders
+        });
+        retter = await JSONData.json();
+        console.log("retter", retter);
+        visRetter();
+      }
+
+      //funktion der viser retter i liste view
+      function visRetter() {
+        const dest = document.querySelector("#liste"); // container til articles med en ret
+        const skabelon = document.querySelector("template").content; // select indhold af html skabelon (article)
+        dest.textContent = "";
+
+        retter.forEach((ret) => {
+          // console.log("kategori", ret.kategori);
+          // loop igennem json (retter)
+          if (filter == ret.kategori || filter == "alle") {
+            const klon = skabelon.cloneNode(true);
+            const md = "-md.jpg";
+            klon.querySelector(".navn").textContent = ret.navn;
+            klon.querySelector("img").src = "medium/" + ret.billednavn + md;
+            klon.querySelector(".kortbeskrivelse").textContent = ret.kortbeskrivelse;
+            klon.querySelector(".pris").textContent = `${ret.pris} DKK`;
+            klon.querySelector("article").addEventListener("click", () => visDetaljer(ret));
+            dest.appendChild(klon);
+          }
+        });
+      }
+
+      function visDetaljer(ret) {
+            console.log(ret);
+        }
+
+        function visDetaljer(ret) {
+            console.log(ret);
+            const md = "-md.jpg";
+            popup.style.display = "block";
+            popup.querySelector("img").src ="medium/" + ret.billednavn +md;
+            popup.querySelector(".navn").textContent = ret.navn;
+            popup.querySelector(".langbeskrivelse").textContent = ret.langbeskrivelse;
+            popup.querySelector(".pris").textContent = `${ret.pris} DKK`;
+        }
+
+        document.querySelector("#luk").addEventListener("click", () => (popup.style.display = "none"));
+    </script>
+  </body>
+</html>
